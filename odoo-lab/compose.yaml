@@ -1,0 +1,56 @@
+# Laboratorio Odoo 17 + PostgreSQL 15 para harmak-tickets-lab.
+# Solo para pruebas: no usar con datos empresariales reales.
+#
+# Antes del primer arranque ejecuta:  ./scripts/init-secrets.sh
+# Después:                            docker compose up -d
+
+name: harmak-odoo-lab
+
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: ${POSTGRES_USER:?Falta POSTGRES_USER en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en .env (ejecuta scripts/init-secrets.sh)}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # Sin "ports": PostgreSQL solo es accesible desde la red interna de Compose.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  odoo:
+    image: odoo:17.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Variables que lee el entrypoint oficial de la imagen de Odoo.
+      HOST: db
+      PORT: "5432"
+      USER: ${POSTGRES_USER}
+      PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      # Publicado solo en 127.0.0.1 del Codespace/host. Codespaces lo reenvía
+      # como puerto privado (requiere tu sesión de GitHub).
+      - "127.0.0.1:${ODOO_PORT:-8069}:8069"
+    volumes:
+      - odoo-data:/var/lib/odoo            # filestore y sesiones
+      - ./config:/etc/odoo:ro               # odoo.conf generado (fuera de Git)
+      - ./addons:/mnt/extra-addons          # módulos propios (p. ej. tickets)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8069/web/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  db-data:
+  odoo-data:

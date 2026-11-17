@@ -1,0 +1,12 @@
+# Secretos generados localmente
+.env
+config/odoo.conf
+
+# Volcados / backups de bases de datos de prueba
+*.dump
+*.sql
+*.sql.gz
+backups/
+
+# Registros del arranque automático
+logs/
