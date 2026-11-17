@@ -7,3 +7,6 @@ config/odoo.conf
 *.sql
 *.sql.gz
 backups/
+
+# Registros del arranque automático
+logs/

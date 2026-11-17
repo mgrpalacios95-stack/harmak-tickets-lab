@@ -1,0 +1,48 @@
+{
+  // Codespace para el laboratorio Odoo 17 + PostgreSQL 15 (solo datos de prueba).
+  // Al crear o iniciar el Codespace el laboratorio se prepara y arranca solo.
+  "name": "harmak-tickets-lab (Odoo 17)",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    // Docker propio dentro del Codespace: los contenedores, redes y volúmenes
+    // de Odoo/PostgreSQL viven aquí y persisten entre reinicios.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb"
+  },
+
+  // Una sola vez al crear el Codespace: credenciales + descarga de imágenes.
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  // En cada inicio/reinicio: levanta los servicios y verifica la salud.
+  "postStartCommand": "bash .devcontainer/scripts/post-start.sh",
+  // Al abrir una terminal/editor: muestra el último resumen.
+  "postAttachCommand": "bash .devcontainer/scripts/estado.sh --resumen",
+
+  "forwardPorts": [8069],
+  "portsAttributes": {
+    "8069": {
+      "label": "Odoo 17",
+      "protocol": "http",
+      "onAutoForward": "notify"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["odoo-lab/README.md"]
+    },
+    "vscode": {
+      "extensions": ["ms-azuretools.vscode-docker"]
+    }
+  }
+}
